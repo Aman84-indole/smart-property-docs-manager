@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Share Selected Pages</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h3 class="text-center">📤 Share Selected Pages</h3>
+        <form method="POST" action="/send_share">
+            <input type="hidden" name="file" value="{{ filepath }}">
+            <div class="mb-3">
+                <label class="form-label">Send via Email</label>
+                <input type="email" class="form-control" name="email" placeholder="example@example.com">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Send via WhatsApp (Mobile No)</label>
+                <input type="text" class="form-control" name="whatsapp" placeholder="+91xxxxxxxxxx">
+            </div>
+            <button type="submit" class="btn btn-primary">Send</button>
+            <a href="/smartview" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

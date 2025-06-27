@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartView Advanced – Personal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f2f6ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #000;
+            text-align: center;
+            padding-top: 30px;
+        }
+        .page-box {
+            display: inline-block;
+            margin: 10px;
+            border: 2px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .page-box img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .action-btn {
+            width: 180px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h3><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" width="30">
+    SmartView Advanced — <strong>{{ filepath.split('/')[-1] }}</strong></h3>
+
+    <form id="pageSelectionForm">
+        {% for img in image_paths %}
+        <div class="page-box">
+            <img src="{{ url_for('static', filename=img) }}" alt="Page">
+            <div>
+                <input type="checkbox" name="selected_pages" value="{{ loop.index }}">
+                Page {{ loop.index }}
+            </div>
+        </div>
+        {% endfor %}
+    </form>
+
+    {% if image_paths %}
+        <div class="d-flex justify-content-center flex-wrap mt-4">
+            <!-- ✅ Extract Button -->
+            <form action="{{ url_for('extract_personal_bp.extract_personal_pages', filepath=filepath) }}" method="POST" onsubmit="copyCheckedPages(this)">
+                <button type="submit" class="btn btn-success action-btn">📄 Extract Pages</button>
+            </form>
+
+            <!-- ✅ Print Button -->
+            <form action="{{ url_for('view_personal_print_bp.print_personal', filepath=filepath) }}" method="POST" onsubmit="copyCheckedPages(this)">
+                <button type="submit" class="btn btn-primary action-btn">🖨️ Print Pages</button>
+            </form>
+
+            <!-- ✅ Share Button -->
+            <form action="{{ url_for('view_personal_share_bp.share_tools', filepath=filepath) }}" method="POST" onsubmit="copyCheckedPages(this)">
+            <button type="submit" class="btn btn-warning action-btn">📤 Share Pages</button>
+            </form>
+
+            <!-- ✅ Watermark Button -->
+            <!-- ✅ Watermark Button -->
+           <!-- ✅ Watermark Button -->
+ <form action="{{ url_for('watermark_personal_bp.add_personal_watermark', filepath=filepath) }}"
+      method="POST" onsubmit="return copyCheckedPages(this)">
+    
+    <div class="mb-2">
+        <input type="text" name="watermark" placeholder="Enter watermark text" class="form-control" required>
+    </div>
+
+    <input type="hidden" name="selected_pages" id="selectedPagesInput">
+    
+    <button type="submit" class="btn btn-danger action-btn">💧 Watermark Pages</button>
+</form>
+   </div>         <!-- ✅ close buttons container -->
+   {% endif %}    <!-- ✅ FIX: ye line lagani hai -->
+
+    <script>
+    function copyCheckedPages(form) {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    const selected = Array.from(checkboxes).map(cb => cb.value);
+
+    let hiddenInput = form.querySelector('#selectedPagesInput');
+    if (!hiddenInput) {
+        hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'selected_pages';
+        hiddenInput.id = 'selectedPagesInput';
+        form.appendChild(hiddenInput);
+    }
+
+    hiddenInput.value = selected.join(',');
+    return true;
+    }
+    </script>

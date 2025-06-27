@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartProperty Upload Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #000;
+      color: #ffd700;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      background-color: #111;
+      border: 1px solid #ffd700;
+      box-shadow: 0 0 10px #ffd70044;
+    }
+    .form-control, .form-select {
+      background-color: #000;
+      color: #fff;
+      border: 1px solid #ffd700;
+    }
+    .form-control::placeholder {
+      color: #aaa;
+    }
+    .btn-outline-warning, .btn-warning {
+      border-color: #ffd700;
+      background-color: #ffd700;
+      color: black;
+    }
+    .btn-outline-warning:hover {
+      background-color: black;
+      color: #ffd700;
+    }
+    .highlight {
+      border: 2px dashed #ffd700;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 15px;
+      color: white;
+    }
+    .highlight.dragover {
+      background-color: #222;
+    }
+    .upload-summary {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .badge-uploaded {
+      background-color: #28a745;
+    }
+    .badge-duplicate {
+      background-color: #6c757d;
+    }
+    .badge-large {
+      background-color: #dc3545;
+    }
+    .label-dark {
+      color: #ccc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <h2 class="text-center mb-4">
+    📁 <span class="text-warning">SmartProperty Upload Panel</span>
+  </h2>
+
+  <a href="/dashboard" class="btn btn-warning mb-3">← Back to Dashboard</a>
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="row">
+      <!-- Left Panel -->
+      <div class="col-md-4">
+        <div class="card p-3 mb-4" style="min-height: 400px;">
+          <h5 class="mb-3 text-white">Add Details</h5>
+
+          <!-- Owner Name -->
+          <label class="label-dark">Owner Name</label>
+          <input list="owner_list" name="owner" class="form-control mb-2" placeholder="Start typing owner..." value="{{ selected_owner or '' }}">
+          <datalist id="owner_list">
+            {% for o in owners %}
+              <option value="{{ o }}">
+            {% endfor %}
+          </datalist>
+          <input type="text" name="new_owner" class="form-control mb-2" placeholder="New Owner Name">
+          <button name="add_owner" class="btn btn-outline-warning w-100 mb-3">+ Add</button>
+
+          <!-- Property Type -->
+          <label class="label-dark">Property Type</label>
+          <input list="property_type_list" name="property_type" class="form-control mb-2" placeholder="Start typing type..." value="{{ selected_property or '' }}">
+          <datalist id="property_type_list">
+            {% for p in property_types %}
+              <option value="{{ p }}">
+            {% endfor %}
+          </datalist>
+          <input type="text" name="new_property" class="form-control mb-2" placeholder="New Property Type">
+          <button name="add_property" class="btn btn-outline-warning w-100 mb-3">+ Add</button>
+
+          <!-- Document Type -->
+          <label class="label-dark">Document Type</label>
+          <input list="doc_type_list" name="doc_type" class="form-control mb-2" placeholder="Start typing doc..." value="{{ selected_doc or '' }}">
+          <datalist id="doc_type_list">
+            {% for d in doc_types %}
+              <option value="{{ d }}">
+            {% endfor %}
+          </datalist>
+          <input type="text" name="new_doc" class="form-control mb-2" placeholder="New Document Type">
+          <button name="add_doc" class="btn btn-outline-warning w-100">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="col-md-8">
+        <div class="card p-3 mb-4">
+          <h5 class="text-white mb-3">Upload PDF Documents</h5>
+
+          <input type="file" id="fileElem" name="files" class="form-control mb-3" multiple accept="application/pdf">
+          <div id="dropArea" class="highlight">
+            📂 Drag & Drop Files Here
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100">Upload Files</button>
+        </div>
+
+        <!-- Upload Summary -->
+        <div class="card p-3">
+          <h5 class="text-white mb-3">Upload Summary</h5>
+          <div class="upload-summary">
+            <table class="table table-dark table-bordered table-sm text-white">
+              <thead class="table-warning text-dark">
+              <tr>
+                <th>File Name</th>
+                <th>Owner</th>
+                <th>Property</th>
+                <th>Doc</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for row in logs %}
+                <tr>
+                  <td>{{ row.file }}</td>
+                  <td>{{ row.owner }}</td>
+                  <td>{{ row.property }}</td>
+                  <td>{{ row.doc }}</td>
+                  <td>
+                    <span class="badge
+                      {% if row.status == 'Uploaded' %}badge-uploaded
+                      {% elif row.status == 'Duplicate' %}badge-duplicate
+                      {% elif row.status == 'Too Large' %}badge-large
+                      {% endif %}">
+                      {{ row.status }}
+                    </span>
+                  </td>
+                  <td>{{ row.time }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="text-end mt-2">Total Files: {{ logs|length }}</p>
+          <a href="/export-log" class="btn btn-warning w-100">Export CSV</a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ✅ Drag & Drop JavaScript -->
+<script>
+  const dropArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('fileElem');
+
+  ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+    dropArea.addEventListener(event, e => e.preventDefault());
+    dropArea.addEventListener(event, e => e.stopPropagation());
+  });
+
+  ;['dragenter', 'dragover'].forEach(event => {
+    dropArea.addEventListener(event, () => dropArea.classList.add('dragover'));
+  });
+
+  ;['dragleave', 'drop'].forEach(event => {
+    dropArea.classList.remove('dragover');
+    dropArea.addEventListener(event, () => dropArea.classList.remove('dragover'));
+  });
+
+  dropArea.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length > 0) {
+      fileInput.files = e.dataTransfer.files;
+    }
+  });
+</script>
+</body>
+</html>

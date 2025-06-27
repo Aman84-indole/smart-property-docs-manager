@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Preview</title>
+</head>
+<body style="margin: 0; padding: 0;">
+    <iframe src="{{ url_for('static', filename=filepath) }}" width="100%" height="100%" style="border: none;"></iframe>
+    <script>
+        window.onload = function() {
+            setTimeout(() => window.print(), 1000);  // ✅ Auto Print
+        };
+    </script>
+</body>
+</html>
